@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product } from 'src/model/Product';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { Product } from 'src/model/Product'
 import { products } from '../data/Products'
-import { ProductGql } from 'src/model/ProductGql';
+import { ProductGql } from 'src/model/ProductGql'
 
 @Injectable()
 export class ProductService {
@@ -11,7 +11,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException('Produto não encontrado')
     }
-    
+
     return product
   }
 
@@ -21,7 +21,7 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException('Produto não encontrado')
     }
-    
+
     return product
   }
 }

@@ -1,28 +1,28 @@
-  import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
-  
-  @ObjectType()
-  export class ProductGql {
-    @Field()
-    id: string;
+import { Field, Float, ObjectType } from '@nestjs/graphql'
 
-    @Field()
-    name: string
-  
-    @Field(() => Float)
-    price: number    
+@ObjectType()
+export class ProductGql {
+  @Field()
+  id: string
 
-    @Field(() => Float, { nullable: true })
-    originalPrice?: number  
+  @Field()
+  name: string
 
-    @Field()
-    description: string
-    
-    @Field()
-    image: string
-    
-    @Field()
-    category: string
-    
-    @Field()
-    inStock: boolean
-  }
+  @Field(() => Float)
+  price: number
+
+  @Field(() => Float, { nullable: true })
+  originalPrice?: number
+
+  @Field()
+  description: string
+
+  @Field()
+  image: string
+
+  @Field()
+  category: string
+
+  @Field()
+  inStock: boolean
+}
