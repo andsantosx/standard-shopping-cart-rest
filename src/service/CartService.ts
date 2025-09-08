@@ -91,4 +91,8 @@ export class CartService {
     cart.updatedAt = new Date()
     return cart
   }
+
+  getAllCarts(): Cart[] {
+    return Array.from(this.carts.values())
+  }
 }

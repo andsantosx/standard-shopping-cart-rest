@@ -6,6 +6,11 @@ import { CartService } from '../service/CartService'
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+  @Get()
+  getAllCarts() {
+    return this.cartService.getAllCarts()
+  }
+
   @Post()
   createCart() {
     return this.cartService.createCart()
