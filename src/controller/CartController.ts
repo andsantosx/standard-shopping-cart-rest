@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Res, Query } from '@nestjs/common'
 import { Response } from 'express'
 import { CartService } from '../service/CartService'
 
@@ -7,8 +7,14 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  getAllCarts() {
-    return this.cartService.getAllCarts()
+  getAllCarts(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10'
+  ) {
+    const pageNum = parseInt(page, 10) || 1
+    const limitNum = parseInt(limit, 10) || 10
+    
+    return this.cartService.getAllCarts(pageNum, limitNum)
   }
 
   @Post()
