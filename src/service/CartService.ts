@@ -27,6 +27,28 @@ export class CartService {
     return cart
   }
 
+  getAllCarts(page: number = 1, limit: number = 10) {
+    const allCarts = Array.from(this.carts.values())
+    const totalItems = allCarts.length
+    const totalPages = Math.ceil(totalItems / limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    
+    const paginatedCarts = allCarts.slice(startIndex, endIndex)
+    
+    return {
+      data: paginatedCarts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      }
+    }
+  }
+
   addItem(cartId: string, productId: string, quantity: number = 1): Cart {
     const cart = this.getCart(cartId)
     const product = products.find(p => p.id === productId)
@@ -90,9 +112,5 @@ export class CartService {
     cart.total = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
     cart.updatedAt = new Date()
     return cart
-  }
-
-  getAllCarts(): Cart[] {
-    return Array.from(this.carts.values())
   }
 }
