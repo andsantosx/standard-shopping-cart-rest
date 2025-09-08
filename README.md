@@ -1,98 +1,288 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Standard Shopping Cart (REST, NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST de **carrinho de compras** construída com **NestJS** e **TypeScript**.  
+O objetivo é expor endpoints para **adicionar**, **atualizar** e **remover** itens do carrinho, com respostas e códigos HTTP padronizados, prontos para testes via **Postman** ou **cURL**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> Observação  
+> Este projeto parte do esqueleto padrão do NestJS (scripts `start`, `start:dev`, `start:prod`, `test`, `test:e2e`, `test:cov`). Caso você ainda não tenha alterado os scripts, utilize-os conforme a seção **Scripts** abaixo. 
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Sumário
 
-## Project setup
+- [Arquitetura](#arquitetura)
+- [Requisitos](#requisitos)
+- [Instalação e Execução](#instalação-e-execução)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Modelo de Dados](#modelo-de-dados)
+- [Especificação da API](#especificação-da-api)
+- [Criar/Obter carrinho](#criarobter-carrinho)
+- [Adicionar item ao carrinho](#adicionar-item-ao-carrinho)
+- [Atualizar item do carrinho](#atualizar-item-do-carrinho)
+- [Excluir item do carrinho](#excluir-item-do-carrinho)
+- [Códigos de status](#códigos-de-status)
+- [Exemplos (cURL)](#exemplos-curl)
+- [Testes](#testes)
+- [Coleção Postman](#coleção-postman)
+- [Padronização de código](#padronização-de-código)
+- [Swagger (opcional)](#swagger-opcional)
+- [Roadmap](#roadmap)
+- [Licença](#licença)
+
+---
+
+## Arquitetura
+
+- **NestJS (Node.js + TypeScript)** — Estrutura modular, com `controllers`, `services` e `DTOs`.
+- **Armazenamento**: inicialmente **em memória** (para facilitar avaliação).  
+  > Pode ser substituído por banco (ex.: PostgreSQL, SQLite, MongoDB) no futuro.
+- **Validação**: via `class-validator`/`class-transformer` (recomendado).
+- **Testes**: unitários e e2e com **Jest** (scripts padrão do NestJS).
+
+Estrutura sugerida:
+
+src/
+app.module.ts
+main.ts
+carts/
+carts.controller.ts
+carts.service.ts
+dto/
+add-item.dto.ts
+update-item.dto.ts
+entities/
+cart.entity.ts
+cart-item.entity.ts
+
+yaml
+Copiar código
+
+---
+
+## Requisitos
+
+- Node.js 18+  
+- npm 9+ (ou pnpm/yarn, se preferir)
+
+---
+
+## Instalação e Execução
 
 ```bash
-$ npm install
-```
+# 1) Instalar dependências
+npm install
 
-## Compile and run the project
+# 2) Rodar em desenvolvimento (hot reload)
+npm run start:dev
 
-```bash
-# development
-$ npm run start
+# 3) Produção (build + start)
+npm run start:prod
+Scripts como start, start:dev, start:prod, test, test:e2e e test:cov fazem parte do boilerplate do NestJS e devem estar no package.json deste projeto.
 
-# watch mode
-$ npm run start:dev
+A API sobe por padrão em: http://localhost:3000
 
-# production mode
-$ npm run start:prod
-```
+Variáveis de Ambiente
+Crie um arquivo .env na raiz (opcional, mas recomendado):
 
-## Run tests
+env
+Copiar código
+PORT=3000
+# DB_URL=postgres://user:pass@localhost:5432/cart   # (futuro)
+O main.ts pode ler process.env.PORT para definir a porta.
 
-```bash
-# unit tests
-$ npm run test
+Modelo de Dados
+Cart (Carrinho)
+json
+Copiar código
+{
+  "id": "string",               // UUID do carrinho
+  "items": [
+    {
+      "productId": "string",    // ID do produto
+      "name": "string",         // Nome do produto (opcional)
+      "price": 99.9,            // Preço unitário (>= 0)
+      "quantity": 1             // Quantidade (>= 1, inteiro)
+    }
+  ],
+  "total": 99.9                 // Soma de (price * quantity)
+}
+Regra: total é calculado no serviço sempre que itens são adicionados/atualizados/removidos.
 
-# e2e tests
-$ npm run test:e2e
+Especificação da API
+Base URL: http://localhost:3000
 
-# test coverage
-$ npm run test:cov
-```
+Criar/Obter carrinho
+POST /carts
+Cria um novo carrinho vazio.
+201 Created → body com objeto Cart.
 
-## Deployment
+GET /carts/:cartId
+Retorna o carrinho.
+200 OK → body com Cart.
+404 Not Found se não existir.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Adicionar item ao carrinho
+POST /carts/:cartId/items
+Body:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+json
+Copiar código
+{
+  "productId": "abc-123",
+  "name": "Produto X",
+  "price": 59.9,
+  "quantity": 2
+}
+201 Created → item criado e carrinho atualizado.
+400 Bad Request para corpo inválido.
+404 Not Found se cartId não existir.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+Comportamento sugerido:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Se o productId já estiver no carrinho, somar quantity (ou retornar 409; escolha e documente—neste README sugerimos somar para UX simples).
 
-## Resources
+Atualizar item do carrinho
+PUT /carts/:cartId/items/:productId
+Body (exemplos):
 
-Check out a few resources that may come in handy when working with NestJS:
+json
+Copiar código
+{ "quantity": 3 }
+ou
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+json
+Copiar código
+{ "price": 49.9, "quantity": 1 }
+200 OK → item atualizado e carrinho recalculado.
+400 Bad Request para corpo inválido.
+404 Not Found se carrinho/item não existir.
 
-## Support
+Nota: Use PUT para atualização completa do item; PATCH poderia ser habilitado para alterações parciais.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Excluir item do carrinho
+DELETE /carts/:cartId/items/:productId
+200 OK (ou 204 No Content) ao remover.
+404 Not Found se carrinho/item não existir.
 
-## Stay in touch
+Códigos de status
+201 Created — criação de carrinho/itens.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+200 OK — leitura/atualização/remoção bem-sucedida.
 
-## License
+204 No Content — alternativa para remoção sem body.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+400 Bad Request — corpo inválido, tipos incorretos, etc.
+
+404 Not Found — carrinho ou item inexistente.
+
+409 Conflict — conflito de regra de negócio (opcional).
+
+500 Internal Server Error — erro inesperado.
+
+Exemplos (cURL)
+Criar carrinho
+bash
+Copiar código
+curl -X POST http://localhost:3000/carts
+Obter carrinho
+bash
+Copiar código
+curl http://localhost:3000/carts/<CART_ID>
+Adicionar item
+bash
+Copiar código
+curl -X POST http://localhost:3000/carts/<CART_ID>/items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "productId": "abc-123",
+    "name": "Camisa",
+    "price": 79.9,
+    "quantity": 2
+  }'
+Atualizar item
+bash
+Copiar código
+curl -X PUT http://localhost:3000/carts/<CART_ID>/items/abc-123 \
+  -H "Content-Type: application/json" \
+  -d '{"quantity": 3}'
+Remover item
+bash
+Copiar código
+curl -X DELETE http://localhost:3000/carts/<CART_ID>/items/abc-123
+Testes
+bash
+Copiar código
+# unit
+npm run test
+
+# end-to-end
+npm run test:e2e
+
+# cobertura
+npm run test:cov
+Recomendação: criar testes unitários para CartsService (cálculo de total, merge de itens), e2e para fluxos REST (criar → adicionar → atualizar → remover → obter).
+
+Coleção Postman
+Abra o Postman.
+
+Crie uma Collection chamada “Shopping Cart REST”.
+
+Adicione as requests:
+
+POST /carts (salvar cartId usando Tests → pm.collectionVariables.set("cartId", pm.response.json().id)).
+
+GET /carts/:cartId (use {{cartId}}).
+
+POST /carts/:cartId/items (body raw JSON com o item).
+
+PUT /carts/:cartId/items/:productId.
+
+DELETE /carts/:cartId/items/:productId.
+
+Exporte a collection se quiser versionar em postman/collection.json.
+
+Padronização de código
+ESLint/Prettier configurados (arquivos .prettierrc.js, eslint.config.mjs).
+
+Recomenda-se Husky + lint-staged (opcional) para checar antes de commits.
+
+Commits seguindo Conventional Commits (opcional).
+
+Swagger (opcional)
+Para documentação automática:
+
+bash
+Copiar código
+npm i @nestjs/swagger swagger-ui-express
+No main.ts:
+
+ts
+Copiar código
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+const config = new DocumentBuilder()
+  .setTitle('Shopping Cart API')
+  .setDescription('API REST do carrinho de compras')
+  .setVersion('1.0')
+  .build();
+
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('docs', app, document);
+Acesse em: http://localhost:3000/docs
+
+Roadmap
+ Persistência em banco relacional (TypeORM/Prisma).
+
+ Autenticação/JWT e carrinho por usuário.
+
+ Política de merge vs. conflito ao adicionar item existente.
+
+ Descontos, cupons e frete.
+
+ Integração com microsserviço de Produtos.
+
+ Versionamento de API (/v1, /v2).
+
+ Observabilidade (logger estruturado, métricas Prometheus).
+
+ Dockerfile + docker-compose.
