@@ -280,6 +280,202 @@ Acesse em: http://localhost:3000/docs
 
 ---
 
+## 🚀 Escalabilidade e Resiliência
+
+Este projeto implementa técnicas avançadas de **escalabilidade** e **resiliência** para garantir alta performance e disponibilidade sob carga.
+
+### ✅ Funcionalidades Implementadas
+
+#### 📦 Escalabilidade
+
+1. **Compressão GZIP**
+   - Todas as respostas HTTP são comprimidas automaticamente
+   - Reduz o tamanho dos payloads em até 70%
+   - Implementado em `src/main.ts`
+
+2. **Cache em Memória**
+   - Sistema de cache configurado com TTL (Time To Live)
+   - Reduz chamadas a APIs externas e banco de dados
+   - Configuração: 200 itens máximo, TTL de 1 minuto
+   - Implementado com `@nestjs/cache-manager`
+
+3. **Paginação**
+   - Endpoint `/demo/produtos` suporta paginação
+   - Parâmetros: `?page=1&limit=10`
+   - Limite máximo de 50 itens por página
+
+#### 🛡️ Resiliência
+
+1. **Rate Limiting (Throttling)**
+   - Proteção contra abuso e DDoS
+   - Limite global: 100 requisições por 15 minutos por IP
+   - Limites específicos por endpoint:
+     - `/demo/produtos`: 20 req/min
+     - `/demo/externo`: 10 req/min
+   - Implementado com `@nestjs/throttler`
+
+2. **Timeout em Requisições HTTP**
+   - Timeout de 5 segundos para chamadas externas
+   - Evita que requisições lentas travem o sistema
+   - Configurado no `HttpModule`
+
+3. **Fallback para Falhas**
+   - Endpoint `/demo/externo` com fallback automático
+   - Retorna resposta padrão quando API externa falha
+   - Logs detalhados de erros
+
+#### 🩺 Monitoramento
+
+1. **Health Check**
+   - Endpoint: `GET /health`
+   - Retorna status do sistema, uptime, memória, versão Node.js
+   - Útil para Docker, Kubernetes e ferramentas de monitoramento
+
+### 🧪 Endpoints de Demonstração
+
+#### 1. Health Check
+```bash
+GET http://localhost:3000/health
+```
+Resposta:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-09-29T19:27:00.000Z",
+  "uptime": 123.45,
+  "memoryUsage": { "rss": 50000000, "heapTotal": 20000000, "heapUsed": 15000000 },
+  "nodeVersion": "v18.0.0",
+  "platform": "win32"
+}
+```
+
+#### 2. Listar Produtos (com Paginação e Rate Limit)
+```bash
+GET http://localhost:3000/demo/produtos?page=1&limit=10
+```
+Resposta:
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "total": 500,
+  "totalPages": 50,
+  "data": [
+    {
+      "id": 1,
+      "nome": "Produto 1",
+      "preco": 450,
+      "estoque": 75,
+      "categoria": "eletronicos",
+      "criadoEm": "2025-09-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+
+#### 3. Buscar Produto por ID (com Cache)
+```bash
+GET http://localhost:3000/demo/produtos/1
+```
+Resposta:
+```json
+{
+  "source": "cache",  // ou "database" na primeira chamada
+  "data": {
+    "id": 1,
+    "nome": "Produto 1",
+    "preco": 450,
+    "estoque": 75,
+    "categoria": "eletronicos",
+    "criadoEm": "2025-09-15T10:30:00.000Z"
+  }
+}
+```
+
+#### 4. API Externa (com Cache, Timeout e Fallback)
+```bash
+GET http://localhost:3000/demo/externo
+```
+Resposta (sucesso):
+```json
+{
+  "source": "live",  // ou "cache" se já estiver em cache
+  "data": {
+    "userId": 1,
+    "id": 1,
+    "title": "delectus aut autem",
+    "completed": false
+  }
+}
+```
+
+Resposta (fallback em caso de falha):
+```json
+{
+  "source": "fallback",
+  "data": {
+    "id": 0,
+    "title": "Serviço temporariamente indisponível",
+    "description": "Estamos enfrentando problemas para acessar o serviço externo. Por favor, tente novamente mais tarde.",
+    "timestamp": "2025-09-29T19:27:00.000Z"
+  }
+}
+```
+
+### 🧪 Testando Rate Limiting
+
+Para testar o rate limiting, faça múltiplas requisições rapidamente:
+
+```bash
+# Windows PowerShell
+for ($i=1; $i -le 25; $i++) { 
+  curl http://localhost:3000/demo/produtos
+  Write-Host "Request $i"
+}
+```
+
+Após 20 requisições em 1 minuto, você receberá:
+```json
+{
+  "statusCode": 429,
+  "message": "ThrottlerException: Too Many Requests"
+}
+```
+
+### 📊 Configurações
+
+Todas as configurações estão centralizadas em `src/app.module.ts`:
+
+```typescript
+// Rate Limiting
+ThrottlerModule.forRoot([{
+  ttl: 900,      // 15 minutos
+  limit: 100,    // 100 requisições
+}])
+
+// Cache
+CacheModule.register({
+  ttl: 60000,    // 1 minuto
+  max: 200,      // 200 itens
+})
+
+// HTTP Client
+HttpModule.register({
+  timeout: 5000,      // 5 segundos
+  maxRedirects: 3,
+})
+```
+
+### 🎯 Benefícios
+
+- ✅ **Performance**: Cache e compressão reduzem latência e uso de banda
+- ✅ **Escalabilidade**: Paginação permite lidar com grandes volumes de dados
+- ✅ **Segurança**: Rate limiting protege contra abuso
+- ✅ **Confiabilidade**: Timeout e fallback garantem disponibilidade
+- ✅ **Observabilidade**: Health check facilita monitoramento
+
+---
+
 ## Observabilidade & Healthcheck
 
 Adicione endpoints simples para monitoramento e checagem de saúde da API. Útil para Docker, orquestradores (Kubernetes) e ferramentas de observabilidade.
