@@ -1,0 +1,14 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 25
+      name: "Trigger rate limit"
+
+scenarios:
+  - name: "Test rate limiting"
+    flow:
+      - get:
+          url: "/demo/produtos"
+          expect:
+            - statusCode: [200, 429]

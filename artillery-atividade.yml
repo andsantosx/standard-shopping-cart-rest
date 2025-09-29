@@ -1,0 +1,45 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 60
+      arrivalRate: 15
+      name: "Sustained load"
+    - duration: 30
+      arrivalRate: 5
+      name: "Cool down"
+
+scenarios:
+  # Cenário 1: GET /products (lista com paginação)
+  - name: "List products"
+    weight: 40
+    flow:
+      - get:
+          url: "/products?page={{ $randomNumber(1, 10) }}&limit=10"
+
+  # Cenário 2: GET /products/{id} (com cache)
+  - name: "Get product by ID (cache test)"
+    weight: 30
+    flow:
+      - get:
+          url: "/products/{{ $randomNumber(1, 500) }}"
+
+  # Cenário 3: POST /cart/add (com atraso artificial)
+  - name: "Add item to cart"
+    weight: 20
+    flow:
+      - post:
+          url: "/cart/add"
+          json:
+            cartId: "cart-{{ $randomNumber(1, 100) }}"
+            productId: "{{ $randomNumber(1, 500) }}"
+            quantity: "{{ $randomNumber(1, 5) }}"
+
+  # Cenário 4: GET /cart/{id}
+  - name: "Get cart"
+    weight: 10
+    flow:
+      - get:
+          url: "/cart/cart-{{ $randomNumber(1, 100) }}"

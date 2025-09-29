@@ -293,11 +293,22 @@ Este projeto implementa técnicas avançadas de **escalabilidade** e **resiliên
    - Reduz o tamanho dos payloads em até 70%
    - Implementado em `src/main.ts`
 
-2. **Cache em Memória**
+2. **Cache Inteligente (3 Opções)**
+   - **Opção 1 - Redis Local (Docker):** Para desenvolvimento local
+     - 🐳 **[Guia: Redis Local com Docker](./REDIS_LOCAL_DOCKER.md)**
+     - Rápido, fácil, sem necessidade de conta externa
+     - Inclui RedisInsight (interface gráfica)
+   - **Opção 2 - Redis Cloud:** Para produção/nuvem
+     - ☁️ **[Guia: Redis Cloud](./REDIS_CLOUD_SETUP.md)**
+     - Cache persistente e escalável
+     - Free tier de 30MB
+   - **Opção 3 - Cache em Memória:** Fallback automático
+     - Usado quando Redis não está configurado
+     - Ideal para testes rápidos
    - Sistema de cache configurado com TTL (Time To Live)
    - Reduz chamadas a APIs externas e banco de dados
-   - Configuração: 200 itens máximo, TTL de 1 minuto
-   - Implementado com `@nestjs/cache-manager`
+   - Configuração: TTL de 1 minuto, 200 itens máximo (memória)
+   - Implementado com `@nestjs/cache-manager` + `cache-manager-redis-store`
 
 3. **Paginação**
    - Endpoint `/demo/produtos` suporta paginação
@@ -330,6 +341,36 @@ Este projeto implementa técnicas avançadas de **escalabilidade** e **resiliên
    - Endpoint: `GET /health`
    - Retorna status do sistema, uptime, memória, versão Node.js
    - Útil para Docker, Kubernetes e ferramentas de monitoramento
+
+### 🧪 Endpoints da Atividade Prática
+
+#### Endpoints Principais (Conforme Atividade)
+
+**1. GET /products** - Lista produtos com paginação
+```bash
+curl "http://localhost:3000/products?page=1&limit=10"
+```
+
+**2. GET /products/{id}** - Detalhes de um produto (COM CACHE)
+```bash
+curl http://localhost:3000/products/1
+```
+
+**3. POST /cart/add** - Adiciona item ao carrinho (COM ATRASO ARTIFICIAL)
+```bash
+curl -X POST http://localhost:3000/cart/add \
+  -H "Content-Type: application/json" \
+  -d '{"cartId": "cart-123", "productId": 1, "quantity": 2}'
+```
+
+**4. GET /cart/{id}** - Consulta carrinho
+```bash
+curl http://localhost:3000/cart/cart-123
+```
+
+📖 **[Guia Completo da Atividade](./GUIA_ATIVIDADE.md)**
+
+---
 
 ### 🧪 Endpoints de Demonstração
 
@@ -473,6 +514,39 @@ HttpModule.register({
 - ✅ **Segurança**: Rate limiting protege contra abuso
 - ✅ **Confiabilidade**: Timeout e fallback garantem disponibilidade
 - ✅ **Observabilidade**: Health check facilita monitoramento
+
+### 🧪 Testes de Carga com Artillery
+
+Este projeto inclui testes de carga completos usando Artillery CLI:
+
+📖 **[Guia Completo de Testes com Artillery](./ARTILLERY_TESTES.md)**
+
+**Scripts de teste incluídos:**
+- `artillery-health.yml` - Teste de health check
+- `artillery-produtos.yml` - Teste de paginação
+- `artillery-cache.yml` - Teste de cache
+- `artillery-ratelimit.yml` - Teste de rate limiting
+- `artillery-full.yml` - Teste completo (todos os endpoints)
+
+**Como executar:**
+```bash
+# Instalar Artillery
+npm install -g artillery
+
+# Executar teste
+artillery run artillery-full.yml
+
+# Gerar relatório HTML
+artillery run --output report.json artillery-full.yml
+artillery report report.json
+```
+
+**Métricas validadas:**
+- ✅ Latência (p50, p95, p99)
+- ✅ Throughput (RPS)
+- ✅ Taxa de erro
+- ✅ Efetividade do cache
+- ✅ Rate limiting
 
 ---
 
